@@ -60,7 +60,7 @@ public class ActiveNotifier implements FineGrainedNotifier {
 			if (scmCause == null) {
 				MessageBuilder message = new MessageBuilder(notifier, build);
 				message.append(causeAction.getShortDescription());
-				notifyStart(build, message.appendOpenLink().toString());
+				notifyStart(build, message.appendOpenLink().toString(), notifier.includeCustomMessage() ? notifier.getText() : null);
 				// Cause was found, exit early to prevent double-message
 				return;
 			}
@@ -68,19 +68,19 @@ public class ActiveNotifier implements FineGrainedNotifier {
 
 		String changes = getChanges(build, notifier.includeCustomMessage());
 		if (changes != null) {
-			notifyStart(build, changes);
+			notifyStart(build, changes, notifier.includeCustomMessage() ? notifier.getText() : null);
 		} else {
-			notifyStart(build, getBuildStatusMessage(build, false, notifier.includeCustomMessage()));
+			notifyStart(build, getBuildStatusMessage(build, false, notifier.includeCustomMessage()), notifier.includeCustomMessage() ? notifier.getText() : null);
 		}
 	}
 
-	private void notifyStart(AbstractBuild build, String message) {
+	private void notifyStart(AbstractBuild build, String message, String text) {
 		AbstractProject<?, ?> project = (build != null) ? build.getProject() : null;
 		AbstractBuild<?, ?> previousBuild = (project != null && project.getLastBuild() != null) ? project.getLastBuild().getPreviousCompletedBuild() : null;
 		if (previousBuild == null) {
-			getMattermost(build).publish(message, "good");
+			getMattermost(build).publish(message, "good", text);
 		} else {
-			getMattermost(build).publish(message, getBuildColor(previousBuild));
+			getMattermost(build).publish(message, getBuildColor(previousBuild), text);
 		}
 	}
 
@@ -111,7 +111,7 @@ public class ActiveNotifier implements FineGrainedNotifier {
 				|| (result == Result.SUCCESS && notifier.getNotifySuccess())
 				|| (result == Result.UNSTABLE && notifier.getNotifyUnstable())) {
 			getMattermost(r).publish(getBuildStatusMessage(r, notifier.includeTestSummary(),
-						notifier.includeCustomMessage()), getBuildColor(r));
+						notifier.includeCustomMessage()), getBuildColor(r), notifier.includeCustomMessage() ? notifier.getText() : null);
 			if (notifier.getCommitInfoChoice().showAnything()) {
 				getMattermost(r).publish(getCommitList(r), getBuildColor(r));
 			}

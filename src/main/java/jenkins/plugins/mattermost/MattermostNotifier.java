@@ -48,6 +48,7 @@ public class MattermostNotifier extends Notifier {
     private CommitInfoChoice commitInfoChoice;
 	private boolean includeCustomMessage;
 	private String customMessage;
+	private String text;
 
 	@Override
 	public DescriptorImpl getDescriptor() {
@@ -128,12 +129,16 @@ public class MattermostNotifier extends Notifier {
 		return customMessage;
 	}
 
+	public String getText() {
+		return text;
+	}
+
 	@DataBoundConstructor
 	public MattermostNotifier(final String endpoint, final String room, final String icon, final String buildServerUrl,
 			final String sendAs, final boolean startNotification, final boolean notifyAborted, final boolean notifyFailure,
 			final boolean notifyNotBuilt, final boolean notifySuccess, final boolean notifyUnstable, final boolean notifyBackToNormal,
 			final boolean notifyRepeatedFailure, final boolean includeTestSummary, final CommitInfoChoice commitInfoChoice,
-			boolean includeCustomMessage, String customMessage) {
+			boolean includeCustomMessage, String customMessage, String text) {
 		super();
 		this.endpoint = endpoint;
 		this.buildServerUrl = buildServerUrl;
@@ -152,6 +157,7 @@ public class MattermostNotifier extends Notifier {
         this.commitInfoChoice = commitInfoChoice;
 		this.includeCustomMessage = includeCustomMessage;
 		this.customMessage = customMessage;
+		this.text = text;
 	}
 
 	public BuildStepMonitor getRequiredMonitorService() {
@@ -271,9 +277,10 @@ public class MattermostNotifier extends Notifier {
             CommitInfoChoice commitInfoChoice = CommitInfoChoice.forDisplayName(sr.getParameter("slackCommitInfoChoice"));
 			boolean includeCustomMessage = "on".equals(sr.getParameter("includeCustomMessage"));
 			String customMessage = sr.getParameter("customMessage");
+			String text = sr.getParameter("text");
 			return new MattermostNotifier(endpoint, room, icon, buildServerUrl, sendAs, startNotification, notifyAborted,
 					notifyFailure, notifyNotBuilt, notifySuccess, notifyUnstable, notifyBackToNormal, notifyRepeatedFailure,
-					includeTestSummary, commitInfoChoice, includeCustomMessage, customMessage);
+					includeTestSummary, commitInfoChoice, includeCustomMessage, customMessage, text);
 		}
 
 		@Override

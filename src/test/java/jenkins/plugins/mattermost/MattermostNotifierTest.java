@@ -67,6 +67,10 @@ public class MattermostNotifierTest extends TestCase {
 			return response;
 		}
 
+		public boolean publish(String message, String color, String text) {
+			return response;
+		}
+
 		public void setResponse(boolean response) {
 			this.response = response;
 		}
