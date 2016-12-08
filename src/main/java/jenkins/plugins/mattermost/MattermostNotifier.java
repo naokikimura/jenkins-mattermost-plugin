@@ -53,6 +53,7 @@ public class MattermostNotifier extends Notifier {
     private CommitInfoChoice commitInfoChoice;
     private boolean includeCustomMessage;
     private String customMessage;
+    private String text;
 
     @Override
     public DescriptorImpl getDescriptor() {
@@ -133,6 +134,10 @@ public class MattermostNotifier extends Notifier {
 	return customMessage;
     }
 
+    public String getText() {
+	return text;
+    }
+
     public void setEndpoint(@CheckForNull String endpoint) {
 	this.endpoint = fixNull(endpoint);
     }
@@ -201,6 +206,10 @@ public class MattermostNotifier extends Notifier {
 	this.customMessage = fixNull(customMessage);
     }
 
+    @DataBoundSetter public void setText(@CheckForNull String text) {
+	this.text = fixNull(text);
+    }
+
     @DataBoundConstructor
     public MattermostNotifier(final String endpoint) {
 	super();
@@ -212,7 +221,7 @@ public class MattermostNotifier extends Notifier {
 	    final String sendAs, final boolean startNotification, final boolean notifyAborted, final boolean notifyFailure,
 	    final boolean notifyNotBuilt, final boolean notifySuccess, final boolean notifyUnstable, final boolean notifyBackToNormal,
 	    final boolean notifyRepeatedFailure, final boolean includeTestSummary, final CommitInfoChoice commitInfoChoice,
-	    boolean includeCustomMessage, String customMessage) {
+	    boolean includeCustomMessage, String customMessage, String text) {
 	super();
 	this.setEndpoint(endpoint);
 	this.setBuildServerUrl(buildServerUrl);
@@ -231,6 +240,7 @@ public class MattermostNotifier extends Notifier {
 	this.setCommitInfoChoice(commitInfoChoice);
 	this.setIncludeCustomMessage(includeCustomMessage);
 	this.setCustomMessage(customMessage);
+	this.setText(text);
     }
 
     public BuildStepMonitor getRequiredMonitorService() {
@@ -350,9 +360,10 @@ public class MattermostNotifier extends Notifier {
 	    CommitInfoChoice commitInfoChoice = CommitInfoChoice.forDisplayName(sr.getParameter("slackCommitInfoChoice"));
 	    boolean includeCustomMessage = "on".equals(sr.getParameter("includeCustomMessage"));
 	    String customMessage = sr.getParameter("customMessage");
+	    String text = sr.getParameter("text");
 	    return new MattermostNotifier(endpoint, room, icon, buildServerUrl, sendAs, startNotification, notifyAborted,
 		    notifyFailure, notifyNotBuilt, notifySuccess, notifyUnstable, notifyBackToNormal, notifyRepeatedFailure,
-		    includeTestSummary, commitInfoChoice, includeCustomMessage, customMessage);
+		    includeTestSummary, commitInfoChoice, includeCustomMessage, customMessage, text);
 	}
 
 	@Override
@@ -436,6 +447,7 @@ public class MattermostNotifier extends Notifier {
 	private boolean showCommitList;
 	private boolean includeCustomMessage;
 	private String customMessage;
+	private String text;
 
 	@DataBoundConstructor
 	public MattermostJobProperty(String teamDomain,
@@ -452,7 +464,8 @@ public class MattermostNotifier extends Notifier {
 		boolean includeTestSummary,
 		boolean showCommitList,
 		boolean includeCustomMessage,
-		String customMessage) {
+		String customMessage,
+		String text) {
 	    this.endpoint = teamDomain;
 	    this.room = room;
 	    this.icon = icon;
@@ -468,6 +481,7 @@ public class MattermostNotifier extends Notifier {
 	    this.showCommitList = showCommitList;
 	    this.includeCustomMessage = includeCustomMessage;
 	    this.customMessage = customMessage;
+	    this.text = text;
 	}
 
 	@Exported
@@ -550,6 +564,11 @@ public class MattermostNotifier extends Notifier {
 	    return customMessage;
 	}
 
+	@Exported
+	public String getText() {
+	    return text;
+	}
+
     }
 
     @Extension public static final class Migrator extends ItemListener {
@@ -602,6 +621,7 @@ public class MattermostNotifier extends Notifier {
 		    mattermostNotifier.commitInfoChoice = mattermostJobProperty.getShowCommitList() ? CommitInfoChoice.AUTHORS_AND_TITLES : CommitInfoChoice.NONE;
 		    mattermostNotifier.includeCustomMessage = mattermostJobProperty.includeCustomMessage();
 		    mattermostNotifier.customMessage = mattermostJobProperty.getCustomMessage();
+		    mattermostNotifier.text = mattermostJobProperty.getText();
 		}
 
 		try {

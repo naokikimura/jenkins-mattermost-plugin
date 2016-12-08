@@ -38,6 +38,10 @@ public class StandardMattermostService implements MattermostService {
 	}
 
 	public boolean publish(String message, String color) {
+		return publish(message, color, null);
+	}
+
+	public boolean publish(String message, String color, String text) {
 		boolean result = true;
 		for (String userAndRoomId : roomIds) {
 			String url = endpoint;
@@ -84,6 +88,9 @@ public class StandardMattermostService implements MattermostService {
 				JSONArray attachments = new JSONArray();
 				attachments.put(attachment);
 				json.put("attachments", attachments);
+				if (text != null) {
+					json.put("text", text);
+				}
 
 				if (!roomId.isEmpty()) json.put("channel", roomId);
 				json.put("username", userId);
