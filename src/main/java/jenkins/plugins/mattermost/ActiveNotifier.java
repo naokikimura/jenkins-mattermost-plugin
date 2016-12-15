@@ -54,13 +54,14 @@ public class ActiveNotifier implements FineGrainedNotifier {
 		//AbstractProject<?, ?> project = build.getProject();
 
 		CauseAction causeAction = build.getAction(CauseAction.class);
+		String text = notifier.includeCustomMessage() ? expandEnvVars(build, notifier.getText()) : null;
 
 		if (causeAction != null) {
 			Cause scmCause = causeAction.findCause(SCMTrigger.SCMTriggerCause.class);
 			if (scmCause == null) {
 				MessageBuilder message = new MessageBuilder(notifier, build);
 				message.append(causeAction.getShortDescription());
-				notifyStart(build, message.appendOpenLink().toString(), notifier.includeCustomMessage() ? notifier.getText() : null);
+				notifyStart(build, message.appendOpenLink().toString(), text);
 				// Cause was found, exit early to prevent double-message
 				return;
 			}
@@ -68,9 +69,9 @@ public class ActiveNotifier implements FineGrainedNotifier {
 
 		String changes = getChanges(build, notifier.includeCustomMessage());
 		if (changes != null) {
-			notifyStart(build, changes, notifier.includeCustomMessage() ? notifier.getText() : null);
+			notifyStart(build, changes, text);
 		} else {
-			notifyStart(build, getBuildStatusMessage(build, false, notifier.includeCustomMessage()), notifier.includeCustomMessage() ? notifier.getText() : null);
+			notifyStart(build, getBuildStatusMessage(build, false, notifier.includeCustomMessage()), text);
 		}
 	}
 
@@ -111,7 +112,7 @@ public class ActiveNotifier implements FineGrainedNotifier {
 				|| (result == Result.SUCCESS && notifier.getNotifySuccess())
 				|| (result == Result.UNSTABLE && notifier.getNotifyUnstable())) {
 			getMattermost(r).publish(getBuildStatusMessage(r, notifier.includeTestSummary(),
-						notifier.includeCustomMessage()), getBuildColor(r), notifier.includeCustomMessage() ? notifier.getText() : null);
+						notifier.includeCustomMessage()), getBuildColor(r), notifier.includeCustomMessage() ? expandEnvVars(r, notifier.getText()) : null);
 			if (notifier.getCommitInfoChoice().showAnything()) {
 				getMattermost(r).publish(getCommitList(r), getBuildColor(r));
 			}
@@ -403,5 +404,17 @@ public class ActiveNotifier implements FineGrainedNotifier {
 		public String toString() {
 			return message.toString();
 		}
+	}
+
+	private static String expandEnvVars(AbstractBuild build, String message) {
+		EnvVars envVars = new EnvVars();
+		try {
+			envVars = build.getEnvironment(new LogTaskListener(logger, INFO));
+		} catch (IOException e) {
+			logger.log(SEVERE, e.getMessage(), e);
+		} catch (InterruptedException e) {
+			logger.log(SEVERE, e.getMessage(), e);
+		}
+		return envVars.expand(message);
 	}
 }
